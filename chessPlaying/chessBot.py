@@ -7,6 +7,7 @@ Created on Mon Sep 24 16:28:33 2018
 
 import chess
 import random
+from moveLogic import neuralNet
 
 def philPlayer(moves):
     return moves[0]

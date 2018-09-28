@@ -37,7 +37,7 @@ def lossFunction(y_true, y_pred):
     
 def runModel():
     inputStack = Input(shape=(8, 8, 119))
-    x = Conv2D(256, strides=(1, 1))(inputStack)
+    x = Conv2D(kernel_size=256, strides=(1, 1))(inputStack)
     x = BatchNormalization()(x)
     x = ReLU()(x)
     
