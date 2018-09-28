@@ -11,4 +11,5 @@ from moveLogic import MCTS
 
 board = chess.Board()
 chessBot.playChess()
-print(MCTS.move(board))
+tree = MCTS.MCST(board, 1, 0, 1)
+print(tree.nextNode(board, 0, 1))
