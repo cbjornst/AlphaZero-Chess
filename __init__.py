@@ -8,8 +8,13 @@ Created on Tue Sep 25 20:19:37 2018
 import chess
 from chessPlaying import chessBot
 from moveLogic import MCTS
+from moveLogic import neuralNet
 
 board = chess.Board()
-chessBot.playChess()
+board = chessBot.playChess(board)
+neuralNet.parseInput(board, 8)
 tree = MCTS.MCST(board, 1, 0, 1)
 print(tree.nextNode(board, 0, 1))
+
+def train():
+    return True

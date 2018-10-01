@@ -27,8 +27,7 @@ def gameOverReason(board):
     else:
         return "Greg flipping the board"
 
-def playChess():
-    board = chess.Board()
+def playChess(board):
     while not board.is_game_over():
         moves = list(board.legal_moves)
         if board.turn:
@@ -36,4 +35,4 @@ def playChess():
         else:
             board.push(gregPlayer(moves))
     print("The game ended with the score " + str(board.result()) + " on turn " + str(board.fullmove_number) + " due to " + gameOverReason(board))
-    print(board)
+    return(board)

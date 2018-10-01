@@ -47,7 +47,8 @@ class MCST:
                 s.push(self.head.edges[i])
                 nextEdge = max(utility)
                 currentNode = nextEdge.nxt
-            probs, v = neuralNet.runModel(currentNode)
+            nnInput = neuralNet.parseInput(currentNode.s, 8)
+            probs, v = neuralNet.runModel(nnInput)
             newEdges = list(s.legal_moves)
             edgeList = []
             for i in range(len(newEdges)):
@@ -55,6 +56,7 @@ class MCST:
                 edgeList[i].nxt = Node(None, s, edgeList[i]) 
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v)
+            print(probs, v)
     
     def backpropogate(self, node, v):
         while node.prev is not None:
