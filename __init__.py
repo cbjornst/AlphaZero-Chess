@@ -12,9 +12,10 @@ from moveLogic import neuralNet
 
 board = chess.Board()
 board = chessBot.playChess(board)
-neuralNet.parseInput(board, 8)
+model = neuralNet.chessModel()
+model.parseInput(board, 8)
 tree = MCTS.MCST(board, 1, 0, 1)
-print(tree.nextNode(board, 0, 1))
+tree.nextNode(board, 0, 1)
 
 def train():
     return True

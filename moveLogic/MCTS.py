@@ -30,6 +30,7 @@ class MCST:
         self.trials = trials
         self.head = Node(None, s, None)
         self.t = t
+        self.model = neuralNet.chessModel()
     
     def nextNode(self, s, turn, c):
         for i in range(self.trials):
@@ -47,16 +48,21 @@ class MCST:
                 s.push(self.head.edges[i])
                 nextEdge = max(utility)
                 currentNode = nextEdge.nxt
-            nnInput = neuralNet.parseInput(currentNode.s, 8)
-            probs, v = neuralNet.runModel(nnInput)
-            newEdges = list(s.legal_moves)
+            nnInput = self.model.parseInput(currentNode.s, 8)
+            probs, v = self.model.runModel(nnInput)
+            v = v[0][0]
+            probs = probs[0].reshape(73, 8, 8)
+            #newEdges = list(s.legal_moves)
             edgeList = []
-            for i in range(len(newEdges)):
-                edgeList[i] = Edge(newEdges[i], probs[i], currentNode, None)
-                edgeList[i].nxt = Node(None, s, edgeList[i]) 
+            #for i in range(len(newEdges)):
+            #    edgeList[i] = Edge(newEdges[i], probs[0][0], currentNode, None)
+            #    edgeList[i].nxt = Node(None, s, edgeList[i]) 
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v)
             print(probs, v)
+    
+    def getProb(self, move, probs):
+        return 0
     
     def backpropogate(self, node, v):
         while node.prev is not None:
