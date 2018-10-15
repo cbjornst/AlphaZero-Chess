@@ -8,8 +8,15 @@ Created on Mon Sep 24 16:28:33 2018
 import chess
 import random
 from moveLogic import MCTS
-from moveLogic import neuralNet
 
+class Player():
+    def __init__(self, board, model):
+        self.tree = MCTS.MCST(board, 3, 0, 1, model, 5)
+        self.model = model
+        self.board = board
+    def nextMove(self):
+        return self.tree.nextNode(self.board.turn, 1)
+    
 def philPlayer(moves):
     return moves[0]
 
@@ -28,11 +35,12 @@ def gameOverReason(board):
     else:
         return "Greg flipping the board"
 
-def playChess(board):
+def playChess(player1, player2, board):
     while not board.is_game_over():
         moves = list(board.legal_moves)
         if board.turn:
-            board.push(philPlayer(moves))
+            board.push(player1.nextMove())
+            print(board)
         else:
             board.push(gregPlayer(moves))
     print("The game ended with the score " + str(board.result()) + " on turn " + str(board.fullmove_number) + " due to " + gameOverReason(board))

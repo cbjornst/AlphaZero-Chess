@@ -11,11 +11,11 @@ from moveLogic import MCTS
 from moveLogic import neuralNet
 
 board = chess.Board()
-board = chessBot.playChess(board)
-model = neuralNet.chessModel()
-model.parseInput(board, 8)
-tree = MCTS.MCST(board, 1, 0, 1)
-node = tree.nextNode(board, 0, 1)
+model1 = neuralNet.chessModel()
+model2 = neuralNet.chessModel()
+player1 = chessBot.Player(board, model1)
+player2 = chessBot.Player(board, model2)
+board = chessBot.playChess(player1, player2, board)
 
 def train():
     return True

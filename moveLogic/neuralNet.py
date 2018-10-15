@@ -34,7 +34,10 @@ class chessModel:
         board2 = board.copy()
         for i in range(T):
             self.parseOneInput(board2, T)
-            board2.pop()
+            if len(board2.move_stack) > 0:
+                board2.pop()
+            else: 
+                break
         return self.result.reshape(1, 119, 8, 8)            
     
     def residualLayer(self, x):
