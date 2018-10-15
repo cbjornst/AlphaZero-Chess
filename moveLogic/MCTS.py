@@ -52,14 +52,14 @@ class MCST:
             probs, v = self.model.runModel(nnInput)
             v = v[0][0]
             probs = probs[0].reshape(73, 8, 8)
-            #newEdges = list(s.legal_moves)
+            newEdges = list(s.legal_moves)
             edgeList = []
-            #for i in range(len(newEdges)):
-            #    edgeList[i] = Edge(newEdges[i], probs[0][0], currentNode, None)
-            #    edgeList[i].nxt = Node(None, s, edgeList[i]) 
+            if len(newEdges) > 0:
+                for i in range(len(newEdges)):
+                    edgeList[i] = Edge(newEdges[i], probs[0][0], currentNode, None)
+                    edgeList[i].nxt = Node(None, s, edgeList[i]) 
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v)
-            print(probs, v)
     
     def getProb(self, move, probs):
         return 0

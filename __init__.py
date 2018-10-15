@@ -15,7 +15,7 @@ board = chessBot.playChess(board)
 model = neuralNet.chessModel()
 model.parseInput(board, 8)
 tree = MCTS.MCST(board, 1, 0, 1)
-tree.nextNode(board, 0, 1)
+node = tree.nextNode(board, 0, 1)
 
 def train():
     return True
