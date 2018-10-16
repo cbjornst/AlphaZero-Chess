@@ -17,9 +17,9 @@ class Edge:
         self.nxt = nxt
         
 class Node:
-    def __init__(self, edges, s, prev, depth):
+    def __init__(self, edges, mv, prev, depth):
         self.edges = edges
-        self.s = s
+        self.mv = mv
         self.prev = prev
         self.depth = depth
         
@@ -28,7 +28,10 @@ class MCST:
         self.s = s.copy()
         self.turn = turn
         self.trials = trials
-        self.head = Node(None, s, None, 0)
+        if s.move_stack != []:
+            self.head = Node(None, s.peek(), None, 0)
+        else:
+            self.head = Node(None, "", None, 0)
         self.t = t
         self.model = model
         self.depth = depth
@@ -71,6 +74,7 @@ class MCST:
     def nextNode(self, turn, c):
         for i in range(self.trials):
             currentNode = self.head
+            board = self.s.copy()
             while currentNode.edges is not None:
                 utility = []
                 UCT = 0
@@ -83,19 +87,18 @@ class MCST:
                     utility += [Q + U]
                 nextEdge = currentNode.edges[utility.index(max(utility))]
                 currentNode = nextEdge.nxt
-            nnInput = self.model.parseInput(currentNode.s, 8)
+                board.push_uci(currentNode.mv)
+            nnInput = self.model.parseInput(board, 8)
             probs, v = self.model.runModel(nnInput)
             v = v[0][0]
             probs = probs[0].reshape(73, 8, 8)
-            newEdges = list(currentNode.s.legal_moves)
+            newEdges = list(board.legal_moves)
             edgeList = []
             if len(newEdges) > 0:
                 for i in range(len(newEdges)):
                     edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs), currentNode, None)]
-                    nextState = currentNode.s.copy()
                     nextMove = str(newEdges[i])
-                    nextState.push_uci(nextMove)
-                    edgeList[i].nxt = Node(None, nextState, edgeList[i], currentNode.depth + 1) 
+                    edgeList[i].nxt = Node(None, nextMove, edgeList[i], currentNode.depth + 1) 
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v)
         move = self.pickMove()
@@ -117,7 +120,8 @@ class MCST:
             denom += edges[i].N ** (1 / self.t)
         for i in range(len(edges)):
             policy += [(edges[i].N ** (1 / self.t)) / denom] 
-        move = policy.index(max(policy))
-        self.head = edges[policy.index(max(policy))].nxt
+        nextHead = edges[policy.index(max(policy))].nxt
+        move = nextHead.mv
+        self.head = nextHead
         self.prev = None
         return move

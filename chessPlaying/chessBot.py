@@ -14,6 +14,7 @@ class Player():
         self.tree = MCTS.MCST(board, 3, 0, 1, model, 5)
         self.model = model
         self.board = board
+        
     def nextMove(self):
         return self.tree.nextNode(self.board.turn, 1)
     
@@ -35,11 +36,11 @@ def gameOverReason(board):
     else:
         return "Greg flipping the board"
 
-def playChess(player1, player2, board):
+def playChess(player1, board):
     while not board.is_game_over():
         moves = list(board.legal_moves)
         if board.turn:
-            board.push(player1.nextMove())
+            board.push_uci(player1.nextMove())
             print(board)
         else:
             board.push(gregPlayer(moves))
