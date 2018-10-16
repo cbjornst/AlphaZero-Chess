@@ -37,6 +37,9 @@ class MCST:
         self.depth = depth
     
     def getProb(self, move, probs):
+        #TODO: Find a better way to calculate p than a series of if statements
+        #I'm almost positive there's a better way to do this
+        #but this works and the neural net is much more important right now
         fr = move.from_square
         to = move.to_square
         y1 = to // 8
@@ -44,7 +47,27 @@ class MCST:
         x1 = to % 8
         x2 = fr % 8
         if self.s.san(move)[0].lower() == "n":
-            p = 0
+            if y1 - y2 == 2:
+                if x1 - x2 == 1:
+                    z = 56
+                else:
+                    z = 58
+            elif y1 - y2 == 1:
+                if x1 - x2 == 2:
+                    z = 59
+                else:
+                    z = 60
+            elif y1 - y2 == -1:
+                if x1 - x2 == 2:
+                    z = 61
+                else:
+                    z = 62
+            else:
+                if x1 - x2 == 1:
+                    z = 63
+                else:
+                    z = 64
+            p = probs[z][y1][x1]
         elif self.s.san(move)[-1].lower() in ["q", "n", "b", "r"]:
             p = 0
         else:
@@ -120,6 +143,7 @@ class MCST:
             denom += edges[i].N ** (1 / self.t)
         for i in range(len(edges)):
             policy += [(edges[i].N ** (1 / self.t)) / denom] 
+        print(policy)
         nextHead = edges[policy.index(max(policy))].nxt
         move = nextHead.mv
         self.head = nextHead
