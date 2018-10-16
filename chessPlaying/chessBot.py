@@ -41,8 +41,13 @@ def playChess(player1, board):
         moves = list(board.legal_moves)
         if board.turn:
             board.push_uci(player1.nextMove())
-            print(board)
         else:
-            board.push(gregPlayer(moves))
+            move = gregPlayer(moves)
+            if move in player1.tree.head.edges:
+                player1.tree.head = player1.tree.head.edges[player1.tree.head.edges.index(move)].nxt
+            else:
+                player1.tree.head = MCTS.Node(None, move, None, 0) 
+            board.push(move)
+        print(board)
     print("The game ended with the score " + str(board.result()) + " on turn " + str(board.fullmove_number) + " due to " + gameOverReason(board))
     return(board)

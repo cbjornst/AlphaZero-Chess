@@ -25,7 +25,7 @@ class Node:
         
 class MCST:
     def __init__(self, s, trials, turn, t, model, depth):
-        self.s = s.copy()
+        self.s = s
         self.turn = turn
         self.trials = trials
         if s.move_stack != []:
