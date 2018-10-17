@@ -78,12 +78,12 @@ class chessModel:
         x = Conv2D(256, kernel_size=3, strides=1, padding='same', input_shape=(119, 8, 8))(inputStack)
         x = BatchNormalization()(x)
         x = ReLU()(x)
-        for i in range(5):
+        for i in range(2):
             x = self.residualLayer(x)
         policy = self.policyHead(x)
         value = self.valueHead(x)
         
         model = Model(inputs=inputStack, outputs=(policy, value))
         model.compile(optimizer='rmsprop', loss=self.lossFunction, metrics=['accuracy'])
-        dumb, v = model.predict(node, batch_size=1)
+        dumb, v = model.predict_on_batch(node)
         return dumb, v

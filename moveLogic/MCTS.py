@@ -5,7 +5,7 @@ Created on Tue Sep 25 20:15:30 2018
 @author: L L L L L
 """
 import chess
-
+import time
 class Edge:
     def __init__(self, a, P, prev, nxt):
         self.a = a
@@ -36,7 +36,7 @@ class MCST:
         self.model = model
         self.depth = depth
     
-    def getProb(self, move, probs):
+    def getProb(self, move, probs, board):
         #TODO: Find a better way to calculate p than a series of if statements
         #I'm almost positive there's a better way to do this
         #but this works and the neural net is much more important right now
@@ -46,7 +46,7 @@ class MCST:
         y2 = fr // 8
         x1 = to % 8
         x2 = fr % 8
-        if self.s.san(move)[0].lower() == "n":
+        if board.san(move)[0].lower() == "n":
             if y1 - y2 == 2:
                 if x1 - x2 == 1:
                     z = 56
@@ -68,7 +68,7 @@ class MCST:
                 else:
                     z = 64
             p = probs[z][y1][x1]
-        elif self.s.san(move)[-1].lower() in ["q", "n", "b", "r"]:
+        elif board.san(move)[-1].lower() in ["q", "n", "b", "r"]:
             p = 0
         else:
             dist = chess.square_distance(fr, to)
@@ -111,15 +111,17 @@ class MCST:
                 nextEdge = currentNode.edges[utility.index(max(utility))]
                 currentNode = nextEdge.nxt
                 board.push_uci(currentNode.mv)
+            start = time.clock()
             nnInput = self.model.parseInput(board, 8)
             probs, v = self.model.runModel(nnInput)
+            print(time.clock() - start)
             v = v[0][0]
             probs = probs[0].reshape(73, 8, 8)
             newEdges = list(board.legal_moves)
             edgeList = []
             if len(newEdges) > 0:
                 for i in range(len(newEdges)):
-                    edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs), currentNode, None)]
+                    edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs, board), currentNode, None)]
                     nextMove = str(newEdges[i])
                     edgeList[i].nxt = Node(None, nextMove, edgeList[i], currentNode.depth + 1) 
             currentNode.edges = edgeList
