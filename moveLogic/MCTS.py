@@ -95,6 +95,7 @@ class MCST:
         return p
     
     def nextNode(self, turn, c):
+        start = time.clock()
         for i in range(self.trials):
             currentNode = self.head
             board = self.s.copy()
@@ -111,10 +112,8 @@ class MCST:
                 nextEdge = currentNode.edges[utility.index(max(utility))]
                 currentNode = nextEdge.nxt
                 board.push_uci(currentNode.mv)
-            start = time.clock()
             nnInput = self.model.parseInput(board, 8)
             probs, v = self.model.runModel(nnInput)
-            print(time.clock() - start)
             v = v[0][0]
             probs = probs[0].reshape(73, 8, 8)
             newEdges = list(board.legal_moves)
@@ -126,6 +125,7 @@ class MCST:
                     edgeList[i].nxt = Node(None, nextMove, edgeList[i], currentNode.depth + 1) 
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v)
+        print(time.clock() - start)
         move = self.pickMove()
         return move
     

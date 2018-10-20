@@ -16,6 +16,8 @@ pieceValues = {'p': 0, 'b': 1, 'n': 2, 'r': 3, 'q': 4, 'k': 5, 'P': 6, 'B': 7,
 class chessModel:
     def __init__(self):
         self.result = np.zeros((119, 8, 8))
+        self.model = None
+        self.buildModel()
         
     def parseOneInput(self, board, T):
         newBoard = np.chararray([8, 8], unicode=True)
@@ -73,7 +75,7 @@ class chessModel:
         loss2 = losses.categorical_crossentropy(y_true, y_pred)
         return loss1 + loss2
         
-    def runModel(self, node):
+    def buildModel(self):
         inputStack = Input(shape=(119, 8, 8))
         x = Conv2D(256, kernel_size=3, strides=1, padding='same', input_shape=(119, 8, 8))(inputStack)
         x = BatchNormalization()(x)
@@ -82,8 +84,10 @@ class chessModel:
             x = self.residualLayer(x)
         policy = self.policyHead(x)
         value = self.valueHead(x)
+        self.model = Model(inputs=inputStack, outputs=(policy, value))
+        self.model.compile(optimizer='rmsprop', loss=self.lossFunction, metrics=['accuracy'])
         
-        model = Model(inputs=inputStack, outputs=(policy, value))
-        model.compile(optimizer='rmsprop', loss=self.lossFunction, metrics=['accuracy'])
-        dumb, v = model.predict_on_batch(node)
-        return dumb, v
+    
+    def runModel(self, node):
+        probs, v = self.model.predict_on_batch(node)
+        return probs, v
