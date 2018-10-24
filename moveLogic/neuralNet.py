@@ -80,7 +80,7 @@ class chessModel:
         x = Conv2D(256, kernel_size=3, strides=1, padding='same', input_shape=(119, 8, 8))(inputStack)
         x = BatchNormalization()(x)
         x = ReLU()(x)
-        for i in range(2):
+        for i in range(5):
             x = self.residualLayer(x)
         policy = self.policyHead(x)
         value = self.valueHead(x)

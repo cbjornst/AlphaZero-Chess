@@ -11,7 +11,7 @@ from moveLogic import MCTS
 
 class Player():
     def __init__(self, board, model):
-        self.tree = MCTS.MCST(board, 200, 0, 1, model, 5)
+        self.tree = MCTS.MCST(board, 50, 0, 1, model)
         self.model = model
         self.board = board
         
@@ -45,10 +45,10 @@ def playChess(player1, board):
             move = gregPlayer(moves)
             if move in player1.tree.head.edges:
                 player1.tree.head = player1.tree.head.edges[player1.tree.head.edges.index(move)].nxt
+                player1.tree.head.prev.nxt = None
                 player1.tree.head.prev = None
             else:
-                player1.tree.head = MCTS.Node(None, move, None, 0)
-                player1.tree.head.prev = None
+                player1.tree.head = MCTS.Node(None, move, None)
             board.push(move)
     print("The game ended with the score " + str(board.result()) + " on turn " + str(board.fullmove_number) + " due to " + gameOverReason(board))
     return(board)

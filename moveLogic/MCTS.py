@@ -17,25 +17,23 @@ class Edge:
         self.nxt = nxt
         
 class Node:
-    def __init__(self, edges, mv, prev, depth):
+    def __init__(self, edges, mv, prev):
         self.edges = edges
         self.mv = mv
         self.prev = prev
-        self.depth = depth
         
 class MCST:
-    def __init__(self, s, trials, turn, t, model, depth):
+    def __init__(self, s, trials, turn, t, model):
         self.s = s
         self.turn = turn
         self.trials = trials
         if s.move_stack != []:
-            self.head = Node(None, s.peek(), None, 0)
+            self.head = Node(None, s.peek(), None)
         else:
-            self.head = Node(None, "", None, 0)
+            self.head = Node(None, "", None)
         self.t = t
         self.model = model
-        self.depth = depth
-    
+        
     def getProb(self, move, probs, board):
         #TODO: Find a better way to calculate p than a series of if statements
         #I'm almost positive there's a better way to do this
@@ -96,12 +94,15 @@ class MCST:
     
     def nextNode(self, turn, c):
         start = time.clock()
+        board = self.s.copy()
         for i in range(self.trials):
             currentNode = self.head
-            board = self.s.copy()
-            while currentNode.edges is not None:
+            depth = 0
+            while currentNode.edges is not None and depth < 6:
+                depth += 1
                 utility = []
                 UCT = 0
+                #UCT = sum(edge.N for edge in currentNode.edges)
                 for i in range(len(currentNode.edges)):
                     UCT += currentNode.edges[i].N
                 for i in range(len(currentNode.edges)):
@@ -109,6 +110,8 @@ class MCST:
                     Q = currentNode.edges[i].Q
                     U = c * currentNode.edges[i].P * PUCT
                     utility += [Q + U]
+                if utility == []:
+                    print(currentNode.edges)
                 nextEdge = currentNode.edges[utility.index(max(utility))]
                 currentNode = nextEdge.nxt
                 board.push_uci(currentNode.mv)
@@ -122,9 +125,12 @@ class MCST:
                 for i in range(len(newEdges)):
                     edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs, board), currentNode, None)]
                     nextMove = str(newEdges[i])
-                    edgeList[i].nxt = Node(None, nextMove, edgeList[i], currentNode.depth + 1) 
+                    edgeList[i].nxt = Node(None, nextMove, edgeList[i]) 
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v)
+            while depth != 0:
+                depth -= 1
+                board.pop()
         print(time.clock() - start)
         move = self.pickMove()
         return move
@@ -145,9 +151,9 @@ class MCST:
             denom += edges[i].N ** (1 / self.t)
         for i in range(len(edges)):
             policy += [(edges[i].N ** (1 / self.t)) / denom] 
-        print(policy)
         nextHead = edges[policy.index(max(policy))].nxt
         move = nextHead.mv
         self.head = nextHead
-        self.prev = None
+        self.head.prev.nxt = None
+        self.head.prev = None
         return move
