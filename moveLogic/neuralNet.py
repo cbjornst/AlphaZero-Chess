@@ -18,7 +18,7 @@ class chessModel:
         self.model = None
         self.buildModel()
         
-    def parseOneInput(self, board, T, result):
+    def parseOneInput(self, board, T, result, move):
         newBoard = np.chararray([8, 8], unicode=True)
         pm = board.piece_map()
         for i in board.piece_map():
@@ -35,7 +35,11 @@ class chessModel:
         np.set_printoptions(threshold=np.inf)
         board2 = board.copy()
         for i in range(T):
-            self.parseOneInput(board2, i, result)
+            if len(board2.move_stack) > 0:
+                move = board2.peek()
+            else:
+                move = None
+            self.parseOneInput(board2, i, result, move)
             if len(board2.move_stack) > 0:
                 board2.pop()
             else: 
@@ -55,8 +59,6 @@ class chessModel:
             result[101] += 1
         if board.can_claim_fifty_moves():
             result[102] += 1
-        if board.fullmove_number == 30:
-            print(result[98])
         return result.reshape(1, 119, 8, 8)            
     
     def residualLayer(self, x):
