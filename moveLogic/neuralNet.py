@@ -15,11 +15,10 @@ pieceValues = {'p': 0, 'b': 1, 'n': 2, 'r': 3, 'q': 4, 'k': 5, 'P': 6, 'B': 7,
 
 class chessModel:
     def __init__(self):
-        self.result = np.zeros((119, 8, 8))
         self.model = None
         self.buildModel()
         
-    def parseOneInput(self, board, T):
+    def parseOneInput(self, board, T, result):
         newBoard = np.chararray([8, 8], unicode=True)
         pm = board.piece_map()
         for i in board.piece_map():
@@ -28,19 +27,37 @@ class chessModel:
             for j in range(8):
                 if newBoard[i][j] is not '':
                     layer = pieceValues[newBoard[i][j]] + (12 * T)
-                    self.result[layer][i][j] = 1.0
-        
-    
+                    result[layer][i][j] = 1.0        
+                
     def parseInput(self, board, T):
+        #TODO: don't use an entire new board every time
+        result = np.zeros((119, 8, 8))
         np.set_printoptions(threshold=np.inf)
         board2 = board.copy()
         for i in range(T):
-            self.parseOneInput(board2, T)
+            self.parseOneInput(board2, i, result)
             if len(board2.move_stack) > 0:
                 board2.pop()
             else: 
                 break
-        return self.result.reshape(1, 119, 8, 8)            
+        if board.turn:
+            result[96] += 1
+        else:
+            result[96] += 2
+        result[97] += board.fullmove_number
+        if board.has_kingside_castling_rights(0):
+            result[98] += 1
+        if board.has_kingside_castling_rights(1):
+            result[99] += 1
+        if board.has_queenside_castling_rights(0):
+            result[100] += 1
+        if board.has_queenside_castling_rights(1):
+            result[101] += 1
+        if board.can_claim_fifty_moves():
+            result[102] += 1
+        if board.fullmove_number == 30:
+            print(result[98])
+        return result.reshape(1, 119, 8, 8)            
     
     def residualLayer(self, x):
         resBlock = Conv2D(256, kernel_size=3, padding='same', strides=1)(x)
