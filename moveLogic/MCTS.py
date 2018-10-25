@@ -66,8 +66,21 @@ class MCST:
                 else:
                     z = 64
             p = probs[z][y1][x1]
-        elif board.san(move)[-1].lower() in ["q", "n", "b", "r"]:
-            p = 0
+        elif board.san(move)[-1].lower() in ["n", "b", "r"]:
+            promo = board.san(move)[-1].lower()
+            if promo == "n":
+                z = 0
+            elif promo == "b":
+                z = 3
+            else:
+                z = 6
+            if x1 > x2:
+                z = z + 65
+            elif x1 < x2:
+                z = z + 66
+            else:
+                z = z + 67
+            p = probs[z][y2][x2]
         else:
             dist = chess.square_distance(fr, to)
             if y1 > y2:
@@ -89,7 +102,7 @@ class MCST:
                     z = 14 + dist
                 else:
                     z = 42 + dist
-            p = probs[z][y1][x1]
+            p = probs[z][y2][x2]
         return p
     
     def nextNode(self, turn, c):
@@ -98,7 +111,7 @@ class MCST:
         for i in range(self.trials):
             currentNode = self.head
             depth = 0
-            while currentNode.edges is not None and depth < 6:
+            while currentNode.edges is not None and currentNode.edges != [] and depth < 6:
                 depth += 1
                 utility = []
                 UCT = 0
@@ -110,8 +123,6 @@ class MCST:
                     Q = currentNode.edges[i].Q
                     U = c * currentNode.edges[i].P * PUCT
                     utility += [Q + U]
-                if utility == []:
-                    print(currentNode.edges)
                 nextEdge = currentNode.edges[utility.index(max(utility))]
                 currentNode = nextEdge.nxt
                 board.push_uci(currentNode.mv)
@@ -121,11 +132,10 @@ class MCST:
             probs = probs[0].reshape(73, 8, 8)
             newEdges = list(board.legal_moves)
             edgeList = []
-            if len(newEdges) > 0:
-                for i in range(len(newEdges)):
-                    edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs, board), currentNode, None)]
-                    nextMove = str(newEdges[i])
-                    edgeList[i].nxt = Node(None, nextMove, edgeList[i]) 
+            for i in range(len(newEdges)):
+                edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs, board), currentNode, None)]
+                nextMove = str(newEdges[i])
+                edgeList[i].nxt = Node(None, nextMove, edgeList[i]) 
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v)
             while depth != 0:
