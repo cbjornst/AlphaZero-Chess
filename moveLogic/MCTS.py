@@ -75,33 +75,34 @@ class MCST:
             else:
                 z = 6
             if x1 > x2:
-                z = z + 65
+                z += 65
             elif x1 < x2:
-                z = z + 66
+                z += 66
             else:
-                z = z + 67
+                z += 67
             p = probs[z][y2][x2]
         else:
             dist = chess.square_distance(fr, to)
             if y1 > y2:
                 if x1 > x2:
-                    z = 7 + dist
+                    z = 7
                 elif x1 < x2:
-                    z = 49 + dist
+                    z = 49
                 else:
-                    z = 0 + dist
+                    z = 0
             elif y1 < y2:
                 if x1 > x2:
-                    z = 21 + dist
+                    z = 21
                 elif x1 < x2:
-                    z = 35 + dist
+                    z = 35
                 else:
-                    z = 28 + dist
+                    z = 28
             else:
                 if x1 > x2:
-                    z = 14 + dist
+                    z = 14
                 else:
-                    z = 42 + dist
+                    z = 42
+            z += dist
             p = probs[z][y2][x2]
         return p
     
