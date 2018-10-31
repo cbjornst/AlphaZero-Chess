@@ -49,23 +49,23 @@ class MCST:
                 if x1 - x2 == 1:
                     z = 56
                 else:
-                    z = 58
+                    z = 57
             elif y1 - y2 == 1:
                 if x1 - x2 == 2:
-                    z = 59
+                    z = 58
                 else:
-                    z = 60
+                    z = 59
             elif y1 - y2 == -1:
                 if x1 - x2 == 2:
-                    z = 61
+                    z = 60
                 else:
-                    z = 62
+                    z = 61
             else:
                 if x1 - x2 == 1:
-                    z = 63
+                    z = 62
                 else:
-                    z = 64
-            p = probs[z][y1][x1]
+                    z = 63
+            p = probs[z][y2][x2]
         elif board.san(move)[-1].lower() in ["n", "b", "r"]:
             promo = board.san(move)[-1].lower()
             if promo == "n":
@@ -75,11 +75,11 @@ class MCST:
             else:
                 z = 6
             if x1 > x2:
-                z += 65
+                z += 64
             elif x1 < x2:
-                z += 66
+                z += 65
             else:
-                z += 67
+                z += 66
             p = probs[z][y2][x2]
         else:
             dist = chess.square_distance(fr, to)
