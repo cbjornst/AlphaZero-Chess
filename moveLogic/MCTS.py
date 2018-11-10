@@ -7,6 +7,7 @@ Created on Tue Sep 25 20:15:30 2018
 import chess
 import time
 from math import sqrt
+import numpy as np
 class Edge:
     def __init__(self, a, P, prev, nxt):
         self.a = a
@@ -108,13 +109,15 @@ class MCST:
             p = probs[z][y2][x2]
         return p
     
-    def nextNode(self, turn, c):
+    def nextNode(self,c):
         start = time.clock()
         board = self.s.copy()
         for i in range(self.trials):
             currentNode = self.head
             depth = 0
+            turn = 1
             while currentNode.edges is not None and currentNode.edges != [] and depth < 6:
+                dr = np.random.dirichlet([.03] * len(currentNode.edges))
                 depth += 1
                 turn *= -1
                 utility = []
@@ -125,7 +128,10 @@ class MCST:
                 for i in range(len(currentNode.edges)):
                     PUCT = sqrt(UCT) / (1 + currentNode.edges[i].N)
                     Q = currentNode.edges[i].Q
-                    U = c * currentNode.edges[i].P * PUCT
+                    if currentNode is self.head:
+                        U = c * ((currentNode.edges[i].P * .75) + (.25 * dr[i])) * PUCT
+                    else:
+                        U = c * currentNode.edges[i].P * PUCT
                     utility += [Q + U]
                 nextEdge = currentNode.edges[utility.index(max(utility))]
                 currentNode = nextEdge.nxt

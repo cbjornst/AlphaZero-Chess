@@ -16,11 +16,7 @@ class Player():
         self.board = board
         
     def nextMove(self):
-        if self.board.turn:
-            turn = 1
-        else:
-            turn = -1
-        return self.tree.nextNode(turn, 1)
+        return self.tree.nextNode(1)
     
 def philPlayer(moves):
     return moves[0]
@@ -42,6 +38,9 @@ def gameOverReason(board):
 
 def playChess(player1, player2, board):
     while not board.is_game_over():
+        if board.fullmove_number > 30:
+            player1.tree.t = .5
+            player2.tree.t = .5
         moves = list(board.legal_moves)
         if board.turn:
             move = player1.nextMove()
