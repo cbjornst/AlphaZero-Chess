@@ -62,10 +62,10 @@ class chessModel:
         return result.reshape(1, 119, 8, 8)            
     
     def residualLayer(self, x):
-        resBlock = Conv2D(256, kernel_size=3, padding='same', strides=1)(x)
+        resBlock = Conv2D(76, kernel_size=4, padding='same', strides=1)(x)
         resBlock = BatchNormalization()(resBlock)
         resBlock = ReLU()(resBlock)
-        resBlock = Conv2D(256, kernel_size=3, padding='same', strides=1)(resBlock)
+        resBlock = Conv2D(76, kernel_size=4, padding='same', strides=1)(resBlock)
         resBlock = BatchNormalization()(resBlock)
         resBlock = Add()([x, resBlock])
         resBlock = ReLU()(resBlock)
@@ -96,7 +96,7 @@ class chessModel:
         
     def buildModel(self):
         inputStack = Input(shape=(119, 8, 8))
-        x = Conv2D(256, kernel_size=3, strides=1, padding='same', input_shape=(119, 8, 8))(inputStack)
+        x = Conv2D(76, kernel_size=4, strides=1, padding='same', input_shape=(119, 8, 8))(inputStack)
         x = BatchNormalization()(x)
         x = ReLU()(x)
         for i in range(5):

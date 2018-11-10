@@ -6,6 +6,7 @@ Created on Tue Sep 25 20:15:30 2018
 """
 import chess
 import time
+from math import sqrt
 class Edge:
     def __init__(self, a, P, prev, nxt):
         self.a = a
@@ -19,6 +20,7 @@ class Edge:
 class Node:
     def __init__(self, edges, mv, prev):
         self.edges = edges
+        self.edgeMoves = []
         self.mv = mv
         self.prev = prev
         
@@ -114,13 +116,14 @@ class MCST:
             depth = 0
             while currentNode.edges is not None and currentNode.edges != [] and depth < 6:
                 depth += 1
+                turn *= -1
                 utility = []
                 UCT = 0
                 #UCT = sum(edge.N for edge in currentNode.edges)
                 for i in range(len(currentNode.edges)):
                     UCT += currentNode.edges[i].N
                 for i in range(len(currentNode.edges)):
-                    PUCT = UCT / (1 + currentNode.edges[i].N)
+                    PUCT = sqrt(UCT) / (1 + currentNode.edges[i].N)
                     Q = currentNode.edges[i].Q
                     U = c * currentNode.edges[i].P * PUCT
                     utility += [Q + U]
@@ -137,20 +140,23 @@ class MCST:
                 edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs, board), currentNode, None)]
                 nextMove = str(newEdges[i])
                 edgeList[i].nxt = Node(None, nextMove, edgeList[i]) 
+                currentNode.edgeMoves = [str(move) for move in newEdges]
             currentNode.edges = edgeList
-            self.backpropogate(currentNode, v)
+            self.backpropogate(currentNode, v, turn)
             while depth != 0:
+                turn *= -1
                 depth -= 1
                 board.pop()
-        print(time.clock() - start)
+        #print(time.clock() - start)
         move = self.pickMove()
         return move
     
-    def backpropogate(self, node, v):
+    def backpropogate(self, node, v, turn):
         while node.prev is not None:
+            turn = turn * -1
             edge = node.prev
             edge.N += 1
-            edge.W = edge.W + v
+            edge.W = edge.W + v * turn
             edge.Q = (edge.W / edge.N)
             node = edge.prev
 

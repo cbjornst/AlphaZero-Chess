@@ -11,12 +11,16 @@ from moveLogic import MCTS
 
 class Player():
     def __init__(self, board, model):
-        self.tree = MCTS.MCST(board, 10, 0, 1, model)
+        self.tree = MCTS.MCST(board, 50, 0, 1, model)
         self.model = model
         self.board = board
         
     def nextMove(self):
-        return self.tree.nextNode(self.board.turn, 1)
+        if self.board.turn:
+            turn = 1
+        else:
+            turn = -1
+        return self.tree.nextNode(turn, 1)
     
 def philPlayer(moves):
     return moves[0]
@@ -36,19 +40,36 @@ def gameOverReason(board):
     else:
         return "Greg flipping the board"
 
-def playChess(player1, board):
+def playChess(player1, player2, board):
     while not board.is_game_over():
         moves = list(board.legal_moves)
         if board.turn:
-            board.push_uci(player1.nextMove())
+            move = player1.nextMove()
+            board.push_uci(move)
+            if player2 == "greg":
+                continue
+            else:
+                if player2.tree.head.edges is not None:
+                    if move in player2.tree.head.edgeMoves:
+                        player2.tree.head = player2.tree.head.edges[player2.tree.head.edgeMoves.index(move)].nxt
+                        player2.tree.head.prev.nxt = None
+                        player2.tree.head.prev = None
+                    else:
+                        player2.tree.head = MCTS.Node(None, move, None)
+                else:
+                    player2.tree.head = MCTS.Node(None, move, None)
         else:
-            move = gregPlayer(moves)
-            if move in player1.tree.head.edges:
-                player1.tree.head = player1.tree.head.edges[player1.tree.head.edges.index(move)].nxt
+            if player2 == "greg":
+                move = gregPlayer(moves)
+                board.push(move)
+            else:
+                move = player2.nextMove()
+                board.push_uci(move)
+            if move in player1.tree.head.edgeMoves:
+                player1.tree.head = player1.tree.head.edges[player1.tree.head.edgeMoves.index(move)].nxt
                 player1.tree.head.prev.nxt = None
                 player1.tree.head.prev = None
             else:
                 player1.tree.head = MCTS.Node(None, move, None)
-            board.push(move)
     print("The game ended with the score " + str(board.result()) + " on turn " + str(board.fullmove_number) + " due to " + gameOverReason(board))
     return(board)
