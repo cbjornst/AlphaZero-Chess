@@ -11,9 +11,10 @@ from moveLogic import MCTS
 
 class Player():
     def __init__(self, board, model):
-        self.tree = MCTS.MCST(board, 200, 0, 1, model)
+        self.tree = MCTS.MCST(board, 50, 0, 1, model)
         self.model = model
         self.board = board
+        self.policies = []
         
     def nextMove(self):
         return self.tree.nextNode(1)
@@ -43,8 +44,9 @@ def playChess(player1, player2, board):
             player2.tree.t = .5
         moves = list(board.legal_moves)
         if board.turn:
-            move = player1.nextMove()
+            move, policy = player1.nextMove()
             board.push_uci(move)
+            player1.policies += [policy]
             if player2 == "greg":
                 continue
             else:
@@ -62,7 +64,8 @@ def playChess(player1, player2, board):
                 move = gregPlayer(moves)
                 board.push(move)
             else:
-                move = player2.nextMove()
+                move, policy = player2.nextMove()
+                player2.policies += [policy]
                 board.push_uci(move)
             if move in player1.tree.head.edgeMoves:
                 player1.tree.head = player1.tree.head.edges[player1.tree.head.edgeMoves.index(move)].nxt

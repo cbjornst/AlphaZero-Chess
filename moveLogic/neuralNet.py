@@ -8,8 +8,12 @@ Created on Wed Sep 26 20:17:04 2018
 from keras.layers import Conv2D, Flatten, Input, Dense, BatchNormalization, ReLU, Add
 from keras.models import Model
 from keras.utils import plot_model
+from keras.optimizers import RMSprop
 from keras import losses
 import numpy as np
+from IPython.display import SVG
+from keras.utils.vis_utils import model_to_dot
+import os
 
 pieceValues = {'p': 0, 'b': 1, 'n': 2, 'r': 3, 'q': 4, 'k': 5, 'P': 6, 'B': 7,
                    'N': 8, 'R': 9, 'Q': 10, 'K': 11}
@@ -77,7 +81,7 @@ class chessModel:
         policy = BatchNormalization()(policy)
         policy = ReLU()(policy)
         policy = Flatten()(policy)
-        policy = Dense(4672)(policy)
+        policy = Dense(4672, name = 'policy_head')(policy)
         return policy
         
     def valueHead(self, x):
@@ -87,7 +91,7 @@ class chessModel:
         value = Flatten()(value)
         value = Dense(256)(value)
         value = ReLU()(value)
-        value = Dense(1, activation='tanh')(value)
+        value = Dense(1, activation='tanh', name = 'value_head')(value)
         return value
         
     def lossFunction(self, y_true, y_pred):
@@ -104,8 +108,12 @@ class chessModel:
             x = self.residualLayer(x)
         policy = self.policyHead(x)
         value = self.valueHead(x)
+        losses = {"value_head": "mean_squared_error", "policy_head": "categorical_crossentropy"}
+        lossWeights = {"policy_head": .5, "value_head": .5}
         self.model = Model(inputs=inputStack, outputs=(policy, value))
-        self.model.compile(optimizer='rmsprop', loss=self.lossFunction, metrics=['accuracy'])
+        self.model.compile(optimizer=RMSprop(lr=.03), loss=losses, metrics=['accuracy'], loss_weights=lossWeights)
+        os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
+        #SVG(model_to_dot(self.model).create(prog='dot', format='svg'))
         plot_model(self.model, to_file='model.png')
         
     

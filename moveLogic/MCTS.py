@@ -179,4 +179,4 @@ class MCST:
         self.head = nextHead
         self.head.prev.nxt = None
         self.head.prev = None
-        return move
+        return move, policy
