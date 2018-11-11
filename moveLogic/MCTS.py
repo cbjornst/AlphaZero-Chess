@@ -37,77 +37,82 @@ class MCST:
         self.t = t
         self.model = model
         
-    def getProb(self, move, probs, board):
+    def getProb(self, legalMoves, probs, board):
         #TODO: Find a better way to calculate p than a series of if statements
         #I'm almost positive there's a better way to do this
         #but this works and the neural net is much more important right now
-        fr = move.from_square
-        to = move.to_square
-        y1 = to // 8
-        y2 = fr // 8
-        x1 = to % 8
-        x2 = fr % 8
-        if board.san(move)[0].lower() == "n":
-            if y1 - y2 == 2:
-                if x1 - x2 == 1:
-                    z = 56
+        prob = []
+        for move in legalMoves:
+            fr = move.from_square
+            to = move.to_square
+            y1 = to // 8
+            y2 = fr // 8
+            x1 = to % 8
+            x2 = fr % 8
+            if board.san(move)[0].lower() == "n":
+                if y1 - y2 == 2:
+                    if x1 - x2 == 1:
+                        z = 56
+                    else:
+                        z = 57
+                elif y1 - y2 == 1:
+                    if x1 - x2 == 2:
+                        z = 58
+                    else:
+                        z = 59
+                elif y1 - y2 == -1:
+                    if x1 - x2 == 2:
+                        z = 60
+                    else:
+                        z = 61
                 else:
-                    z = 57
-            elif y1 - y2 == 1:
-                if x1 - x2 == 2:
-                    z = 58
-                else:
-                    z = 59
-            elif y1 - y2 == -1:
-                if x1 - x2 == 2:
-                    z = 60
-                else:
-                    z = 61
-            else:
-                if x1 - x2 == 1:
-                    z = 62
-                else:
-                    z = 63
-            p = probs[z][y2][x2]
-        elif board.san(move)[-1].lower() in ["n", "b", "r"]:
-            promo = board.san(move)[-1].lower()
-            if promo == "n":
-                z = 0
-            elif promo == "b":
-                z = 3
-            else:
-                z = 6
-            if x1 > x2:
-                z += 64
-            elif x1 < x2:
-                z += 65
-            else:
-                z += 66
-            p = probs[z][y2][x2]
-        else:
-            dist = chess.square_distance(fr, to)
-            if y1 > y2:
-                if x1 > x2:
-                    z = 7
-                elif x1 < x2:
-                    z = 49
-                else:
+                    if x1 - x2 == 1:
+                        z = 62
+                    else:
+                        z = 63
+                p = probs[z][y2][x2]
+            elif board.san(move)[-1].lower() in ["n", "b", "r"]:
+                promo = board.san(move)[-1].lower()
+                if promo == "n":
                     z = 0
-            elif y1 < y2:
+                elif promo == "b":
+                    z = 3
+                else:
+                    z = 6
                 if x1 > x2:
-                    z = 21
+                    z += 64
                 elif x1 < x2:
-                    z = 35
+                    z += 65
                 else:
-                    z = 28
+                    z += 66
+                p = probs[z][y2][x2]
             else:
-                if x1 > x2:
-                    z = 14
+                dist = chess.square_distance(fr, to)
+                if y1 > y2:
+                    if x1 > x2:
+                        z = 7
+                    elif x1 < x2:
+                        z = 49
+                    else:
+                        z = 0
+                elif y1 < y2:
+                    if x1 > x2:
+                        z = 21
+                    elif x1 < x2:
+                        z = 35
+                    else:
+                        z = 28
                 else:
-                    z = 42
-            z += dist
-            p = probs[z][y2][x2]
-        return p
+                    if x1 > x2:
+                        z = 14
+                    else:
+                        z = 42
+                z += dist
+                p = probs[z][y2][x2]
+            prob += [p]
+        softmax = np.exp(prob)
+        softmax = softmax / np.sum(softmax)
+        return softmax
     
     def nextNode(self,c):
         start = time.clock()
@@ -140,13 +145,14 @@ class MCST:
             probs, v = self.model.runModel(nnInput)
             v = v[0][0]
             probs = probs[0].reshape(73, 8, 8)
-            newEdges = list(board.legal_moves)
+            legalMoves = list(board.legal_moves)
+            p = self.getProb(legalMoves, probs, board)
             edgeList = []
-            for i in range(len(newEdges)):
-                edgeList += [Edge(newEdges[i], self.getProb(newEdges[i], probs, board), currentNode, None)]
-                nextMove = str(newEdges[i])
+            for i in range(len(legalMoves)):
+                edgeList += [Edge(legalMoves[i], p[i], currentNode, None)]
+                nextMove = str(legalMoves[i])
                 edgeList[i].nxt = Node(None, nextMove, edgeList[i]) 
-                currentNode.edgeMoves = [str(move) for move in newEdges]
+                currentNode.edgeMoves = [str(move) for move in legalMoves]
             currentNode.edges = edgeList
             self.backpropogate(currentNode, v, turn)
             while depth != 0:
@@ -156,14 +162,14 @@ class MCST:
         #print(time.clock() - start)
         move = self.pickMove()
         return move
-    
+
     def backpropogate(self, node, v, turn):
         while node.prev is not None:
             turn = turn * -1
             edge = node.prev
             edge.N += 1
-            edge.W = edge.W + v * turn
-            edge.Q = (edge.W / edge.N)
+            edge.W = edge.W + (v * turn)
+            edge.Q = edge.W / edge.N
             node = edge.prev
 
     def pickMove(self):

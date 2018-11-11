@@ -29,10 +29,12 @@ def generateData():
         games = np.asarray(games)
         np.save('games' + str(j), games)
 
-generateData()
-
 def trainModel(model):
     g1 = np.load('games1.npy')
+    print(g1)
     g2 = np.load('games2.npy')
     g3 = np.load('games3.npy')
     g4 = np.load('games0.npy')
+    
+generateData()
+#trainModel(model1)
