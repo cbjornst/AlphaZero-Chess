@@ -129,7 +129,7 @@ class MCST:
                     PUCT = sqrt(UCT) / (1 + currentNode.edges[i].N)
                     Q = currentNode.edges[i].Q
                     if currentNode is self.head:
-                        U = c * ((currentNode.edges[i].P * .75) + (.25 * dr[i])) * PUCT
+                        U = c * ((currentNode.edges[i].P * .66) + (.33 * dr[i])) * PUCT
                     else:
                         U = c * currentNode.edges[i].P * PUCT
                     utility += [Q + U]

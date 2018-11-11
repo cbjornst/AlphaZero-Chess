@@ -11,7 +11,7 @@ from moveLogic import MCTS
 
 class Player():
     def __init__(self, board, model):
-        self.tree = MCTS.MCST(board, 50, 0, 1, model)
+        self.tree = MCTS.MCST(board, 200, 0, 1, model)
         self.model = model
         self.board = board
         

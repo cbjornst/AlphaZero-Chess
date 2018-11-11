@@ -13,19 +13,24 @@ from moveLogic import neuralNet
 
 model1 = neuralNet.chessModel()
 model2 = neuralNet.chessModel()
-games = []
-for i in range(5):
-    game = []
-    board = chess.Board()
-    player1 = chessBot.Player(board, model1)
-    player2 = chessBot.Player(board, model2)
-    board = chessBot.playChess(player1, player2, board)
-    game += [[board.result()]]
-    while len(board.move_stack) > 0:
-        game = [board.pop()] + game
-    games += [game]
-print(games)
-games = np.asarray(games)
-np.save('games', games)
+for j in range(4): 
+    games = []
+    for i in range(4):
+        game = []
+        board = chess.Board()
+        player1 = chessBot.Player(board, model1)
+        player2 = chessBot.Player(board, model2)
+        board = chessBot.playChess(player1, player2, board)
+        game += [[board.result()]]
+        while len(board.move_stack) > 0:
+            game = [board.pop()] + game
+        games += [game]
+    games = np.asarray(games)
+    np.save('games' + str(j), games)
+g1 = np.load('games1.npy')
+g2 = np.load('games2.npy')
+g3 = np.load('games3.npy')
+g4 = np.load('games0.npy')
+
 def train():
     return True

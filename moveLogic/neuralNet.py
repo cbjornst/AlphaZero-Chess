@@ -7,6 +7,7 @@ Created on Wed Sep 26 20:17:04 2018
 
 from keras.layers import Conv2D, Flatten, Input, Dense, BatchNormalization, ReLU, Add
 from keras.models import Model
+from keras.utils import plot_model
 from keras import losses
 import numpy as np
 
@@ -99,12 +100,13 @@ class chessModel:
         x = Conv2D(76, kernel_size=4, strides=1, padding='same', input_shape=(119, 8, 8))(inputStack)
         x = BatchNormalization()(x)
         x = ReLU()(x)
-        for i in range(5):
+        for i in range(2):
             x = self.residualLayer(x)
         policy = self.policyHead(x)
         value = self.valueHead(x)
         self.model = Model(inputs=inputStack, outputs=(policy, value))
         self.model.compile(optimizer='rmsprop', loss=self.lossFunction, metrics=['accuracy'])
+        plot_model(self.model, to_file='model.png')
         
     
     def runModel(self, node):
