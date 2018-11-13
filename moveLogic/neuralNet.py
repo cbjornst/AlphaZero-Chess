@@ -4,7 +4,7 @@ Created on Wed Sep 26 20:17:04 2018
 
 @author: L L L L L
 """
-
+import os
 from keras.layers import Conv2D, Flatten, Input, Dense, BatchNormalization, ReLU, Add
 from keras.models import Model
 from keras.utils import plot_model
@@ -13,7 +13,6 @@ from keras import losses
 import numpy as np
 from IPython.display import SVG
 from keras.utils.vis_utils import model_to_dot
-import os
 
 pieceValues = {'p': 0, 'b': 1, 'n': 2, 'r': 3, 'q': 4, 'k': 5, 'P': 6, 'B': 7,
                    'N': 8, 'R': 9, 'Q': 10, 'K': 11}
@@ -112,10 +111,11 @@ class chessModel:
         lossWeights = {"policy_head": .5, "value_head": .5}
         self.model = Model(inputs=inputStack, outputs=(policy, value))
         self.model.compile(optimizer=RMSprop(lr=.03), loss=losses, metrics=['accuracy'], loss_weights=lossWeights)
-        os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
+        #self.model.compile(optimizer='rmsprop', loss=self.lossFunction, metrics=['accuracy'])
+        #os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
         #SVG(model_to_dot(self.model).create(prog='dot', format='svg'))
-        plot_model(self.model, to_file='model.png')
-        
+        #plot_model(self.model, to_file='model.png')
+            
     
     def runModel(self, node):
         probs, v = self.model.predict_on_batch(node)

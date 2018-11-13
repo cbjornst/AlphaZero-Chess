@@ -37,7 +37,7 @@ class MCST:
         self.t = t
         self.model = model
         
-    def getProb(self, legalMoves, probs, board):
+    def getProb(self, legalMoves, probs, board, training, Q):
         #TODO: Find a better way to calculate p than a series of if statements
         #I'm almost positive there's a better way to do this
         #but this works and the neural net is much more important right now
@@ -70,7 +70,6 @@ class MCST:
                         z = 62
                     else:
                         z = 63
-                p = probs[z][y2][x2]
             elif board.san(move)[-1].lower() in ["n", "b", "r"]:
                 promo = board.san(move)[-1].lower()
                 if promo == "n":
@@ -84,8 +83,7 @@ class MCST:
                 elif x1 < x2:
                     z += 65
                 else:
-                    z += 66
-                p = probs[z][y2][x2]
+                    z += 66     
             else:
                 dist = chess.square_distance(fr, to)
                 if y1 > y2:
@@ -108,11 +106,17 @@ class MCST:
                     else:
                         z = 42
                 z += dist
-                p = probs[z][y2][x2]
-            prob += [p]
-        softmax = np.exp(prob)
-        softmax = softmax / np.sum(softmax)
-        return softmax
+            if training:
+                probs[z][y2][x2] = Q[legalMoves.index(move)]
+            else:
+                p = probs[z][y2][x2]    
+                prob += [p]
+        if training:
+            return probs
+        else:
+            softmax = np.exp(prob)
+            softmax = softmax / np.sum(softmax)
+            return softmax
     
     def nextNode(self,c):
         start = time.clock()
@@ -146,7 +150,7 @@ class MCST:
             v = v[0][0]
             probs = probs[0].reshape(73, 8, 8)
             legalMoves = list(board.legal_moves)
-            p = self.getProb(legalMoves, probs, board)
+            p = self.getProb(legalMoves, probs, board, False, None)
             edgeList = []
             for i in range(len(legalMoves)):
                 edgeList += [Edge(legalMoves[i], p[i], currentNode, None)]

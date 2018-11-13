@@ -42,6 +42,7 @@ def playChess(player1, player2, board):
         if board.fullmove_number > 30:
             player1.tree.t = .5
             player2.tree.t = .5
+            break;
         moves = list(board.legal_moves)
         if board.turn:
             move, policy = player1.nextMove()
