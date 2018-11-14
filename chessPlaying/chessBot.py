@@ -11,7 +11,7 @@ from moveLogic import MCTS
 
 class Player():
     def __init__(self, board, model):
-        self.tree = MCTS.MCST(board, 50, 0, 1, model)
+        self.tree = MCTS.MCST(board, 75, 0, 1, model)
         self.model = model
         self.board = board
         self.policies = []
@@ -39,7 +39,7 @@ def gameOverReason(board):
 
 def playChess(player1, player2, board):
     while not board.is_game_over():
-        if board.fullmove_number > 30:
+        if board.fullmove_number > 80:
             player1.tree.t = .5
             player2.tree.t = .5
             break;

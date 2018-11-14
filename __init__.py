@@ -14,13 +14,13 @@ from moveLogic import neuralNet
 import random
 
 model1 = neuralNet.chessModel()
-model1.model = models.load_model('ugh')
+#model1.model = models.load_model('ugh')
 model2 = neuralNet.chessModel()
-
-def generateData():
-    for j in range(1): 
+hstory = []
+def generateData(hstory):
+    for j in range(8): 
         games = []
-        for i in range(4):
+        for i in range(8):
             game = []
             board = chess.Board()
             player1 = chessBot.Player(board, model1)
@@ -36,9 +36,9 @@ def generateData():
             games += [game]
         games = np.asarray(games)
         np.save('games' + str(j), games)
-        trainModel(model1)
+    trainModel(model1, hstory)
 
-def trainModel(model):
+def trainModel(model, hstory):
     g1 = np.load('games0.npy')
     miniBatch = []
     values = []
@@ -48,35 +48,36 @@ def trainModel(model):
         board = chess.Board()
         value = g1[i][-2] 
         if value == '1/2-1/2':
-            values += [[0]]
+            values += [[-1.0]]
         elif value == '1-0':
-            values += [[1]]
+            values += [[1.0]]
         else:
-            value += [0]
+            values += [[-1.0]]
         policies += [g1[i][-1]]
         moveset = g1[i][:-2]
         if len(moveset) % 2 > 0:
-            move = random.randint(8, 21)
+            move = random.randint(8, (len(moveset) - 3)/2)
         else:
-            move = random.randint(8, 21)  
+            move = random.randint(8, (len(moveset) - 2)/2)  
         for j in range(0,move):
             board.push(moveset[2 * j])
             board.push(moveset[(2 * j) + 1])
         legalMoves = list(board.legal_moves)
         player1 = chessBot.Player(board, model)
-        probabilities = model1.parseInput(board, 8)
+        probabilities = model.parseInput(board, 8)
         miniBatch += [probabilities]
         act = np.zeros((73, 8, 8))
         act = player1.tree.getProb(legalMoves, act, board, True, policies[i][move])
         act = np.ndarray.flatten(act)
         actual += [act]
-    for i in range(4):
+    for i in range(6):
         act2 = np.reshape(actual[i], (1, 4672))
         labels = {'policy_head': act2, 'value_head': np.array(values[i])} 
-        history = model.model.fit(miniBatch[i], labels, epochs=2, verbose=1, validation_split=0, batch_size = 1) 
+        history = model.model.fit(miniBatch[i], labels, epochs=1, verbose=1, validation_split=0, batch_size = 1) 
     model.model.save('ugh')
-    generateData()
+    hstory += [history.history['loss']]
     print(values)
-    print(history.history['loss'])       
-generateData()
-#trainModel(model1)
+    print(hstory)
+    generateData(hstory)       
+generateData(hstory)
+#trainModel(model1, [])
