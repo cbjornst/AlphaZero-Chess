@@ -9,6 +9,7 @@ import time
 from math import sqrt
 import numpy as np
 class Edge:
+    #MCTS edge
     def __init__(self, a, P, prev, nxt):
         self.a = a
         self.N = 0
@@ -19,6 +20,7 @@ class Edge:
         self.nxt = nxt
         
 class Node:
+    #MCTS Node
     def __init__(self, edges, mv, prev):
         self.edges = edges
         self.edgeMoves = []
@@ -27,6 +29,7 @@ class Node:
         
 class MCST:
     def __init__(self, s, trials, turn, t, model):
+        #Trials is usually set to 75, t is set to 1
         self.s = s
         self.turn = turn
         self.trials = trials
@@ -38,9 +41,8 @@ class MCST:
         self.model = model
         
     def getProb(self, legalMoves, probs, board, training, Q):
-        #TODO: Find a better way to calculate p than a series of if statements
-        #I'm almost positive there's a better way to do this
-        #but this works and the neural net is much more important right now
+        #Get the probabilities from the neural net output, or alternatively
+        #convert the calculated probabilites to a neural net input 
         prob = []
         for move in legalMoves:
             fr = move.from_square
@@ -119,6 +121,7 @@ class MCST:
             return softmax
     
     def nextNode(self,c):
+        #find the next node
         start = time.clock()
         board = self.s.copy()
         for i in range(self.trials):
@@ -126,6 +129,7 @@ class MCST:
             depth = 0
             turn = 1
             while currentNode.edges is not None and currentNode.edges != [] and depth < 6:
+                #search until an unexplored node is found or depth is reached
                 dr = np.random.dirichlet([.03] * len(currentNode.edges))
                 depth += 1
                 turn *= -1
@@ -145,13 +149,14 @@ class MCST:
                 nextEdge = currentNode.edges[utility.index(max(utility))]
                 currentNode = nextEdge.nxt
                 board.push_uci(currentNode.mv)
-            nnInput = self.model.parseInput(board, 8)
+            nnInput = self.model.parseInput(board, 2)
             probs, v = self.model.runModel(nnInput)
             v = v[0][0]
             probs = probs[0].reshape(73, 8, 8)
             legalMoves = list(board.legal_moves)
             p = self.getProb(legalMoves, probs, board, False, None)
             edgeList = []
+            #add new nodes
             for i in range(len(legalMoves)):
                 edgeList += [Edge(legalMoves[i], p[i], currentNode, None)]
                 nextMove = str(legalMoves[i])
@@ -168,6 +173,7 @@ class MCST:
         return move
 
     def backpropogate(self, node, v, turn):
+        #update edges
         while node.prev is not None:
             turn = turn * -1
             edge = node.prev
@@ -177,6 +183,7 @@ class MCST:
             node = edge.prev
 
     def pickMove(self):
+        #pick best move using visit count
         policy = []
         edges = self.head.edges
         denom = 0

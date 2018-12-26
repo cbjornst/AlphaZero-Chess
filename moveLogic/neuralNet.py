@@ -11,8 +11,8 @@ from keras.utils import plot_model
 from keras.optimizers import RMSprop
 from keras import losses
 import numpy as np
-from IPython.display import SVG
-from keras.utils.vis_utils import model_to_dot
+#from IPython.display import SVG
+#from keras.utils.vis_utils import model_to_dot
 
 pieceValues = {'p': 0, 'b': 1, 'n': 2, 'r': 3, 'q': 4, 'k': 5, 'P': 6, 'B': 7,
                    'N': 8, 'R': 9, 'Q': 10, 'K': 11}
@@ -23,6 +23,7 @@ class chessModel:
         self.buildModel()
         
     def parseOneInput(self, board, T, result, move):
+        #called for each timestep T
         newBoard = np.chararray([8, 8], unicode=True)
         pm = board.piece_map()
         for i in board.piece_map():
@@ -34,7 +35,7 @@ class chessModel:
                     result[layer][i][j] = 1.0        
                 
     def parseInput(self, board, T):
-        #TODO: don't use an entire new board every time
+        #parse a board state and convert it into a Neural Net input
         result = np.zeros((119, 8, 8))
         np.set_printoptions(threshold=np.inf)
         board2 = board.copy()
@@ -99,6 +100,7 @@ class chessModel:
         return loss1 + loss2
         
     def buildModel(self):
+        #compiles the neural net
         inputStack = Input(shape=(119, 8, 8))
         x = Conv2D(76, kernel_size=4, strides=1, padding='same', input_shape=(119, 8, 8))(inputStack)
         x = BatchNormalization()(x)
@@ -118,5 +120,6 @@ class chessModel:
             
     
     def runModel(self, node):
+        #gets predictions
         probs, v = self.model.predict_on_batch(node)
         return probs, v
